@@ -1,0 +1,1 @@
+bitcoin-qt.exe -conf=c:\btc\bitcoin.conf -datadir=..\data -txindex 
