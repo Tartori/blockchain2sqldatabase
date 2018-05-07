@@ -1,23 +1,24 @@
+/* CREATE USER 'testnet3'@'localhost' IDENTIFIED BY 'testnet3'; */
+
+
 CREATE DATABASE `testnet3` /*!40100 COLLATE 'latin1_swedish_ci' */;
 
 USE `testnet3`;
 
-/* CREATE USER 'testnet3'@'localhost' IDENTIFIED BY 'testnet3'; */
 GRANT SELECT, EXECUTE, SHOW VIEW, ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE TEMPORARY TABLES, CREATE VIEW, DELETE, DROP, EVENT, INDEX, INSERT, REFERENCES, TRIGGER, UPDATE, LOCK TABLES  ON `testnet3`.* TO 'testnet3'@'localhost' WITH GRANT OPTION;
 
 
 CREATE TABLE `block` (
 	`block_hash` VARCHAR(64) NOT NULL,
-	`height` INT NOT NULL,
-	`size` INT NOT NULL,
-	`blockweight` INT NOT NULL,
-	`version` INT NOT NULL,
+	`prev_block_hash` VARCHAR(64) NOT NULL,
+	`height` INT(11) NOT NULL,
+	`size` INT(11) NOT NULL,
+	`version` INT(11) NOT NULL,
 	`merkleroot` VARCHAR(64) NOT NULL,
 	`time` DATETIME NOT NULL,
-	`mediantime` DATETIME NOT NULL,
-	`difficulty` FLOAT NOT NULL,
+	`difficulty` DOUBLE NOT NULL,
 	`chainwork` VARCHAR(64) NOT NULL,
-	`nonce` INT NOT NULL,
+	`nonce` BIGINT(20) NOT NULL,
 	PRIMARY KEY (`block_hash`),
 	INDEX `height` (`height`)
 )
@@ -25,13 +26,14 @@ COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
 ;
 
+
 CREATE TABLE `transaction` (
 	`txid` VARCHAR(64) NOT NULL,
 	`block_hash` VARCHAR(64) NOT NULL,
 	`txhash` VARCHAR(64) NULL DEFAULT NULL,
 	`version` INT(11) NULL DEFAULT NULL,
-	`size` INT(11) NULL DEFAULT NULL,
-	`locktime` DATETIME NULL DEFAULT NULL,
+	`size` BIGINT(20) NULL DEFAULT NULL,
+	`locktime` BIGINT(20) NULL DEFAULT NULL,
 	PRIMARY KEY (`txid`),
 	INDEX `txhash` (`txhash`),
 	CONSTRAINT `block_transaction` FOREIGN KEY (`block_hash`) REFERENCES `block` (`block_hash`) ON UPDATE CASCADE ON DELETE CASCADE
@@ -54,14 +56,16 @@ ENGINE=InnoDB
 
 
 CREATE TABLE `op_code` (
-	`code` INT NOT NULL,
-	`name` VARCHAR(50) NULL,
-	PRIMARY KEY (`code`),
-	INDEX `name` (`name`)
+	`code` INT(11) NOT NULL,
+	`name` VARCHAR(50) NOT NULL,
+	PRIMARY KEY (`code`, `name`),
+	INDEX `name` (`name`),
+	INDEX `code` (`code`)
 )
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
 ;
+
 
 CREATE TABLE `output_script_instruction` (
 	`txid` VARCHAR(64) NOT NULL,
@@ -86,7 +90,6 @@ CREATE TABLE `vin` (
 	`vinid` INT NOT NULL,
 	`txidout` VARCHAR(64) NOT NULL,
 	`voutid` INT NOT NULL,
-	`sequence` INT NULL,
 	PRIMARY KEY (`txid`, `vinid`),
 	INDEX `txidout_voutid` (`txidout`, `voutid`),
 	CONSTRAINT `vout_vin` FOREIGN KEY (`txidout`, `voutid`) REFERENCES `vout` (`txid`, `voutid`) ON UPDATE RESTRICT,
