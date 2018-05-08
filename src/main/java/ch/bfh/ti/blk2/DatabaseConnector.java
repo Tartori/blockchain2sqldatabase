@@ -9,8 +9,18 @@ public class DatabaseConnector {
 
     public DatabaseConnector() throws ClassNotFoundException, SQLException {
         Class.forName("org.mariadb.jdbc.Driver");
-        con= DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/testnet3","testnet3","testnet3");
+        con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/testnet3", "testnet3", "testnet3");
+
+        Statement s = con.createStatement();
+        s.execute("delete from `txinwitness`;");
+        s.execute("delete from `input_script_instruction`;");
+        s.execute("delete from `vin`;");
+        s.execute("delete from `output_script_instruction`;");
+        s.execute("delete from `op_code`;");
+        s.execute("delete from `vout`;");
+        s.execute("delete from `transaction`;");
+        s.execute("delete from `block`;");
 
     }
 
@@ -28,23 +38,31 @@ public class DatabaseConnector {
     public void saveVOutToDatabase(BitcoindRpcClient.RawTransaction.Out tx, String txid) throws SQLException {
         PreparedStatement s = InsertStatements.generateVoutStatement(con, tx, txid);
         s.execute();
-    }public void saveVOutLineToDatabase(String txid, int voutid, int line, OpCode code, String value) throws SQLException {
+    }
+
+    public void saveVOutLineToDatabase(String txid, int voutid, int line, OpCode code, String value) throws SQLException {
         PreparedStatement s = InsertStatements.generateVoutInstructionStatement(con, txid, voutid, line, code, value);
-        s.execute();
-    }public void saveVinLineToDatabase(String txid, int vinid, int line, OpCode code, String value) throws SQLException {
-        PreparedStatement s = InsertStatements.generateVinInstructionStatement(con, txid, vinid, line, code, value);
-        s.execute();
-    }public void saveVInToDatabase(BitcoindRpcClient.TxInput tx, String txid, int vinid) throws SQLException {
-        PreparedStatement s = InsertStatements.generateVinStatement(con, tx, txid, vinid);
-        s.execute();
-    }public void saveInWitnessToDatabase( String txid, int vinid, int witnessNr, String value) throws SQLException {
-        PreparedStatement s = InsertStatements.generateWitnessStatement(con,  txid, vinid, witnessNr, value);
-        s.execute();
-    }public void saveOpCodeToDatabase(OpCode code) throws SQLException {
-        PreparedStatement s = InsertStatements.generateOPcodeStatement(con, code);
         s.execute();
     }
 
+    public void saveVinLineToDatabase(String txid, int vinid, int line, OpCode code, String value) throws SQLException {
+        PreparedStatement s = InsertStatements.generateVinInstructionStatement(con, txid, vinid, line, code, value);
+        s.execute();
+    }
 
+    public void saveVInToDatabase(BitcoindRpcClient.RawTransaction.In tx, String txid, int vinid) throws SQLException {
+        PreparedStatement s = InsertStatements.generateVinStatement(con, tx, txid, vinid);
+        s.execute();
+    }
+
+    public void saveInWitnessToDatabase(String txid, int vinid, int witnessNr, String value) throws SQLException {
+        PreparedStatement s = InsertStatements.generateWitnessStatement(con, txid, vinid, witnessNr, value);
+        s.execute();
+    }
+
+    public void saveOpCodeToDatabase(OpCode code) throws SQLException {
+        PreparedStatement s = InsertStatements.generateOPcodeStatement(con, code);
+        s.execute();
+    }
 }
 
