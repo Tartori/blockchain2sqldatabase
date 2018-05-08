@@ -1,6 +1,7 @@
 package ch.bfh.ti.blk2;
 
 public enum OpCode {
+    OP_NONE(-1),
     OP_FALSE(0),
     OP_0(0),
     OP_PUSHDATA1(76),
