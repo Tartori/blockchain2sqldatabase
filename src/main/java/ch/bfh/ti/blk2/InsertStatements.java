@@ -5,6 +5,7 @@ import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.SQLType;
 
 public class InsertStatements {
     public static PreparedStatement generateBlockStatement(Connection con, BitcoindRpcClient.Block block) throws SQLException{
@@ -71,14 +72,14 @@ public class InsertStatements {
         return statement;
     }
 
-    public static PreparedStatement generateVinStatement(Connection con, BitcoindRpcClient.TxInput tx, String txid, int vinid) throws SQLException{
+    public static PreparedStatement generateVinStatement(Connection con, BitcoindRpcClient.RawTransaction.In tx, String txid, int vinid) throws SQLException{
         PreparedStatement statement = con.prepareStatement(
                 "INSERT INTO `vin` (`txid`, `vinid`, `txidout`, `voutid`)" +
                         " VALUES (?,?,?,?)");
         statement.setString(1, txid );
         statement.setInt(2, vinid);
         statement.setString(3, tx.txid());
-        statement.setInt(4, tx.vout());
+        statement.setInt(4, tx.txid()==null?0:tx.vout());
         return statement;
     }
 
