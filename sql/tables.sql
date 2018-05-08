@@ -1,4 +1,4 @@
-/* CREATE USER 'testnet3'@'localhost' IDENTIFIED BY 'testnet3'; */
+CREATE USER 'testnet3'@'localhost' IDENTIFIED BY 'testnet3';
 
 
 CREATE DATABASE `testnet3` /*!40100 COLLATE 'latin1_swedish_ci' */;
@@ -88,8 +88,8 @@ ENGINE=InnoDB
 CREATE TABLE `vin` (
 	`txid` VARCHAR(64) NOT NULL,
 	`vinid` INT NOT NULL,
-	`txidout` VARCHAR(64) NOT NULL,
-	`voutid` INT NOT NULL,
+	`txidout` VARCHAR(64) NULL,
+	`voutid` INT NULL,
 	PRIMARY KEY (`txid`, `vinid`),
 	INDEX `txidout_voutid` (`txidout`, `voutid`),
 	CONSTRAINT `vout_vin` FOREIGN KEY (`txidout`, `voutid`) REFERENCES `vout` (`txid`, `voutid`) ON UPDATE RESTRICT,
@@ -106,7 +106,7 @@ CREATE TABLE `input_script_instruction` (
 	`vinid` INT NOT NULL,
 	`line` INT NOT NULL,
 	`opcode` INT NULL DEFAULT NULL,
-	`value` INT NULL DEFAULT NULL,
+	`value` TEXT NULL DEFAULT NULL,
 	PRIMARY KEY (`txid`, `vinid`, `line`),
 	CONSTRAINT `vin_script` FOREIGN KEY (`txid`, `vinid`) REFERENCES `vin` (`txid`, `vinid`) ON UPDATE CASCADE ON DELETE CASCADE,
 	CONSTRAINT `vin_opcode` FOREIGN KEY (`opcode`) REFERENCES `op_code` (`code`)
