@@ -32,7 +32,7 @@ public enum OpCode {
     OP_ENDIF(104),
     OP_VERIFY(105),
     OP_RETURN(106),
-    OP_TOTALSTACK(107),
+    OP_TOALTSTACK(107),
     OP_FROMALTSTACK(108),
     OP_IFDUP(115),
     OP_DEPTH(116),
