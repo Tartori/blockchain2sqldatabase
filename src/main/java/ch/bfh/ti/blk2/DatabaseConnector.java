@@ -15,6 +15,7 @@ public class DatabaseConnector {
     PreparedStatement vinInstructionStatement;
     PreparedStatement witnessStatement;
     PreparedStatement opCodeStatement;
+    int preparedStatements = 0;
 
 
     public DatabaseConnector() throws ClassNotFoundException, SQLException {
@@ -24,10 +25,10 @@ public class DatabaseConnector {
         con.setAutoCommit(false);
         blockStatement = con.prepareStatement(SqlStatements.BLOCK_INSERT_STATEMENT);
         transactionStatement = con.prepareStatement(SqlStatements.TRANSACTION_INSERT_STATEMENT);
-        voutStatement= con.prepareStatement(SqlStatements.VOUT_INSERT_STATEMENT);
+        voutStatement = con.prepareStatement(SqlStatements.VOUT_INSERT_STATEMENT);
         voutInstructionStatement = con.prepareStatement(SqlStatements.OUTPUT_SCRIPT_INSTRUCTION_INSERT_STATEMENT);
-        vinStatement= con.prepareStatement(SqlStatements.VIN_INSERT_STATEMENT);
-        vinInstructionStatement= con.prepareStatement(SqlStatements.VIN_INSTRUCTION_INSERT_STATEMENT);
+        vinStatement = con.prepareStatement(SqlStatements.VIN_INSERT_STATEMENT);
+        vinInstructionStatement = con.prepareStatement(SqlStatements.VIN_INSTRUCTION_INSERT_STATEMENT);
         witnessStatement = con.prepareStatement(SqlStatements.VIN_WITNESS_INSERT_STATEMENT);
         opCodeStatement = con.prepareStatement(SqlStatements.OP_CODE_INSERT_STATEMENT);
     }
@@ -42,15 +43,16 @@ public class DatabaseConnector {
         s.execute("delete from `vout`;");
         s.execute("delete from `transaction`;");
         s.execute("delete from `block`;");
+        preparedStatements = 0;
         con.commit();
     }
 
-    public int getHighestBlockCount() throws SQLException{
+    public int getHighestBlockCount() throws SQLException {
         Statement s = con.createStatement();
         ResultSet rs = s.executeQuery(SqlStatements.MAX_BLOCK_SELECT);
         int max = 0;
-        while(rs.next()){
-            max=rs.getInt(1);
+        while (rs.next()) {
+            max = rs.getInt(1);
         }
         return max;
     }
@@ -67,6 +69,7 @@ public class DatabaseConnector {
         blockStatement.setString(9, block.chainwork());
         blockStatement.setLong(10, block.nonce());
         blockStatement.addBatch();
+        checkForMaxAllowedPackages();
     }
 
     public void saveTransactionToDatabase(BitcoindRpcClient.RawTransaction tx, String blockHash) throws SQLException {
@@ -77,6 +80,7 @@ public class DatabaseConnector {
         transactionStatement.setLong(5, tx.size());
         transactionStatement.setLong(6, tx.lockTime());
         transactionStatement.addBatch();
+        checkForMaxAllowedPackages();
     }
 
     public void saveVOutToDatabase(BitcoindRpcClient.RawTransaction.Out tx, String txid) throws SQLException {
@@ -85,16 +89,19 @@ public class DatabaseConnector {
         voutStatement.setDouble(3, tx.value());
         voutStatement.setString(4, tx.scriptPubKey().type());
         voutStatement.addBatch();
+        checkForMaxAllowedPackages();
     }
 
     public void saveVOutLineToDatabase(String txid, int voutid, int line, OpCode code, String value) throws SQLException {
         generateInstructionStatement(voutInstructionStatement, txid, voutid, line, code, value);
         voutInstructionStatement.addBatch();
+        checkForMaxAllowedPackages();
     }
 
     public void saveVinLineToDatabase(String txid, int vinid, int line, OpCode code, String value) throws SQLException {
         generateInstructionStatement(vinInstructionStatement, txid, vinid, line, code, value);
         vinInstructionStatement.addBatch();
+        checkForMaxAllowedPackages();
     }
 
     public void saveVInToDatabase(BitcoindRpcClient.RawTransaction.In tx, String txid, int vinid) throws SQLException {
@@ -103,6 +110,7 @@ public class DatabaseConnector {
         vinStatement.setString(3, tx.txid());
         vinStatement.setInt(4, tx.txid() == null ? 0 : tx.vout());
         vinStatement.addBatch();
+        checkForMaxAllowedPackages();
     }
 
     public void saveInWitnessToDatabase(String txid, int vinid, int witnessNr, String value) throws SQLException {
@@ -111,6 +119,7 @@ public class DatabaseConnector {
         witnessStatement.setInt(3, witnessNr);
         witnessStatement.setString(4, value);
         witnessStatement.addBatch();
+        checkForMaxAllowedPackages();
     }
 
     public void saveOpCodeToDatabase(OpCode code) throws SQLException {
@@ -119,7 +128,7 @@ public class DatabaseConnector {
         opCodeStatement.addBatch();
     }
 
-    public void executeOpCodeBatches() throws SQLException{
+    public void executeOpCodeBatches() throws SQLException {
         opCodeStatement.executeBatch();
         con.commit();
     }
@@ -133,6 +142,7 @@ public class DatabaseConnector {
         vinInstructionStatement.executeBatch();
         witnessStatement.executeBatch();
         con.commit();
+        preparedStatements=0;
     }
 
     private void generateInstructionStatement(PreparedStatement statement, String txid, int vid, int line, OpCode code, String value) throws SQLException {
@@ -143,6 +153,11 @@ public class DatabaseConnector {
         statement.setString(5, value);
     }
 
+    private void checkForMaxAllowedPackages() throws SQLException {
+        preparedStatements++;
+        if (preparedStatements >= 16000000)
+            executeBatches();
+    }
 
     private static java.sql.Timestamp convertJavaToSqlDate(java.util.Date toConvert) {
         return new java.sql.Timestamp(toConvert.getTime());

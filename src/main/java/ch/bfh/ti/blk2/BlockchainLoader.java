@@ -26,12 +26,13 @@ public class BlockchainLoader {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
             public void run() {
-                times.forEach((x,y)->System.out.println("["+x+"]"+y/1000));
+                //times.forEach((x,y)->System.out.println("["+x+"]"+y/1000));
             }
         }));
     }
 
     public void load(){
+        Date startLoad = new Date();
         try {
             GsonBuilder builder = new GsonBuilder();
             Gson gson = builder.create();
@@ -46,10 +47,11 @@ public class BlockchainLoader {
             }
 
             connector.executeOpCodeBatches();
-            for(int i=maxBlockInDb+1;i<=client.getBlockCount();i++) {
+            for(int i=maxBlockInDb+1;i<=207924;i++) {
                 long start= System.currentTimeMillis();
                 BitcoindRpcClient.Block blk = client.getBlock(i);
                 //System.out.println(gson.toJson(blk));
+                System.out.println(i);
                 connector.saveBlockToDatabase(blk);
                 if(i==0)continue; //fix because the bitcoin client doesn't recognize the transaction of the genesis block
                 for(BitcoindRpcClient.RawTransaction tx : (Iterable<? extends BitcoindRpcClient.RawTransaction>) blk.tx().parallelStream().map(x->
@@ -93,6 +95,7 @@ public class BlockchainLoader {
             System.out.println(e.toString());
             e.printStackTrace();
         }
+        System.out.println(startLoad);
         System.out.println(new Date());
     }
 

@@ -1,5 +1,5 @@
-CREATE USER 'testnet3'@'localhost' IDENTIFIED BY 'testnet3';
-
+/* CREATE USER 'testnet3'@'localhost' IDENTIFIED BY 'testnet3';
+*/
 
 CREATE DATABASE `testnet3` /*!40100 COLLATE 'latin1_swedish_ci' */;
 
@@ -72,7 +72,7 @@ CREATE TABLE `output_script_instruction` (
 	`voutid` INT(11) NOT NULL,
 	`line` INT(11) NOT NULL,
 	`opcode` INT(11) NULL DEFAULT NULL,
-	`value` TEXT NULL DEFAULT NULL,
+	`value` MEDIUMTEXT NULL DEFAULT NULL,
 	PRIMARY KEY (`txid`, `voutid`, `line`),
 	INDEX `opcode` (`opcode`),
 	CONSTRAINT `opcode` FOREIGN KEY (`opcode`) REFERENCES `op_code` (`code`) ON UPDATE CASCADE,
@@ -106,7 +106,7 @@ CREATE TABLE `input_script_instruction` (
 	`vinid` INT NOT NULL,
 	`line` INT NOT NULL,
 	`opcode` INT NULL DEFAULT NULL,
-	`value` TEXT NULL DEFAULT NULL,
+	`value` MEDIUMTEXT NULL DEFAULT NULL,
 	PRIMARY KEY (`txid`, `vinid`, `line`),
 	CONSTRAINT `vin_script` FOREIGN KEY (`txid`, `vinid`) REFERENCES `vin` (`txid`, `vinid`) ON UPDATE CASCADE ON DELETE CASCADE,
 	CONSTRAINT `vin_opcode` FOREIGN KEY (`opcode`) REFERENCES `op_code` (`code`)
@@ -120,7 +120,7 @@ CREATE TABLE `txinwitness` (
 	`txid` VARCHAR(64) NOT NULL,
 	`vinid` INT NOT NULL,
 	`witnessnr` INT NOT NULL,
-	`value` VARCHAR(255) NULL,
+	`value` MEDIUMTEXT NULL,
 	PRIMARY KEY (`txid`, `vinid`, `witnessnr`),
 	CONSTRAINT `vin_witness` FOREIGN KEY (`txid`, `vinid`) REFERENCES `vin` (`txid`, `vinid`) ON UPDATE CASCADE ON DELETE CASCADE
 )
